@@ -115,7 +115,8 @@ new	String:lastWeaponDamage[MAXPLAYERS+1][MAXWEPNAMELEN],
 	lastHealthBeforePickup[MAXPLAYERS+1], 
 	lastHealingOnHit[MAXPLAYERS+1], 
 	bool:lastHeadshot[MAXPLAYERS+1], 
-	bool:lastAirshot[MAXPLAYERS+1], 
+	bool:lastAirshot[MAXPLAYERS+1],
+	Float:lastAirshotHeight[MAXPLAYERS+1],
 	bool:g_bPlayerTakenDirectHit[MAXPLAYERS+1];
 new String:g_sTauntNames[][] = { "", "taunt_scout", "taunt_sniper", "taunt_soldier", "taunt_demoman", "taunt_medic", "taunt_heavy", "taunt_pyro", "taunt_spy", "taunt_engineer" };
 
@@ -580,7 +581,7 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 	lastHealth[attacker] = GetClientHealth(attacker);
 	lastHeadshot[attacker] = false;
 	lastAirshot[attacker] = false;
-	
+	lastAirshotHeight[attacker] = 0;
 	lastWeaponDamage[attacker][0] = '\0';
 	
 	
@@ -641,6 +642,7 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 				new Float:dist = DistanceAboveGround(victim);
 				if (dist >= 170.0) {
 					lastAirshot[attacker] = true;
+					lastAirshotHeight[attacker] = dist;
 				}
 			}
 		}
@@ -766,7 +768,8 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 		decl String:strRealDamage[32] = "";
 		decl String:strHeadshot[32] = "";
 		decl String:strAirshot[32] = "";
-		
+		decl String:strAirshotHeight[32] = "";
+
 		new healing = lastHealingOnHit[attacker];
 		if (healing != 0 && IsPlayerAlive(attacker))
 			FormatEx(strHealing, sizeof(strHealing), " (healing \"%i\")", healing);
@@ -788,12 +791,14 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (lastHeadshot[attacker])
 			strcopy(strHeadshot, sizeof(strHeadshot), " (headshot \"1\")");
 		
-		if (lastAirshot[attacker])
+		if (lastAirshot[attacker]) 
 			strcopy(strAirshot, sizeof(strAirshot), " (airshot \"1\")");
-		
+			
+		if (lastAirshotHeight[attacker] > 0) 
+			strcopy(strAirshotHeight, sizeof(strAirshotHeight), " (height \"%f\")");
 		// Remember: The attacker can be dead!
 		
-		LogToGame("\"%s<%d><%s><%s>\" triggered \"damage\" against \"%s<%d><%s><%s>\" (damage \"%d\")%s (weapon \"%s\")%s%s%s%s",
+		LogToGame("\"%s<%d><%s><%s>\" triggered \"damage\" against \"%s<%d><%s><%s>\" (damage \"%d\")%s (weapon \"%s\")%s%s%s%s%s",
 			attackerName,
 			attackerid,
 			attackerSteamID,
@@ -808,6 +813,7 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 			strHealing,
 			strCrit,
 			strAirshot,
+			strAirshotHeight,
 			strHeadshot);
 	}
 }
