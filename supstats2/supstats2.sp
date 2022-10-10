@@ -768,9 +768,11 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
 		decl String:strAirshot[32] = "";
 		
 		new healing = lastHealingOnHit[attacker];
-		if (healing != 0 && IsPlayerAlive(attacker))
+		if (healing != 0 && IsPlayerAlive(attacker)) {
 			FormatEx(strHealing, sizeof(strHealing), " (healing \"%i\")", healing);
-		
+			// Make sure to reset the last heal on hit value
+			lastHealingOnHit[attacker] = 0;
+		}
 		if (minicrit)
 			strcopy(strCrit, sizeof(strCrit), " (crit \"mini\")");
 		else if (crit)
